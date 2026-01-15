@@ -1,0 +1,27 @@
+# Fichiers à ignorer lors de la construction Docker
+tmp/
+
+# Configuration Git
+.git
+.gitignore
+
+# Secrets (sécurité)
+.env
+
+# Fichiers Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Fichiers de compilation locaux
+main
+main.exe
+server.exe
+bin/
+
+# Données locales de la base de données
+postgres_data/
+
+# Fichiers IDE
+.vscode/
+.idea/

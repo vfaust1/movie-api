@@ -1,0 +1,17 @@
+# Sécurité (Mots de passe)
+.env
+
+# Binaires et compilation
+main
+main.exe
+server.exe
+*.exe
+/bin/
+/tmp/
+
+# Docker volumes 
+postgres_data/
+
+# Dossiers systèmes et IDE
+.DS_Store
+.vscode/

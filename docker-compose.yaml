@@ -1,0 +1,26 @@
+services:
+  # Service 1 : Application Go
+  api:
+    build: .             # Construit l'image à partir du dossier courant
+    ports:
+      - "8080:8080"      # Ouvre le port 8080 vers l'extérieur
+    environment:
+      # L'astuce est ici ! On remplace "localhost" par "db" (le nom du service ci-dessous)
+      - API_KEY=super-secret-password-123
+      - DATABASE_URL=postgres://postgres:monsupermotdepasse@db:5432/movieapi?sslmode=disable
+    depends_on:
+      - db               # Attend que la DB soit prête avant de démarrer
+
+  # Service 2 : Base de Données (Postgres)
+  db:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=monsupermotdepasse
+      - POSTGRES_DB=movieapi
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Pour ne pas perdre les données si on éteint
+
+# Déclaration du volume de stockage
+volumes:
+  postgres_data:
