@@ -2,9 +2,16 @@ package store
 
 import "database/sql"
 
-// Cette structure contient tous tes modèles
+type MovieRepository interface {
+	AddMovie(Movie) (Movie, error)
+	GetMoviebyID(int) (Movie, error)
+	GetMovies(string, Filters) ([]Movie, Metadata, error)
+	UpdateMovie(Movie) error
+	DeleteMovie(int) error
+}
+
 type Storage struct {
-	Movies MovieModel
+	Movies MovieRepository
 }
 
 // Fonction pour initialiser le Storage avec la connexion DB
