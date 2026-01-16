@@ -1,6 +1,11 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+
+	httpSwagger "github.com/swaggo/http-swagger"
+	_ "github.com/vfaust1/movie-api/docs"
+)
 
 func routes() http.Handler {
 	router := http.NewServeMux()
@@ -11,6 +16,7 @@ func routes() http.Handler {
 	router.HandleFunc("PUT /movies/{id}", updateMovieHandler)
 	router.HandleFunc("DELETE /movies/{id}", deleteMovieHandler)
 
-	// On emballe le tout dans notre middleware avant de renvoyer
+	router.Handle("/swagger/", httpSwagger.WrapHandler)
+
 	return loggingMiddleware(authMiddleware(router))
 }

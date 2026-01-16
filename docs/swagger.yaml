@@ -1,0 +1,200 @@
+basePath: /
+definitions:
+  main.CreateMovieRequest:
+    properties:
+      genres:
+        example:
+        - Action
+        - Sci-Fi
+        items:
+          type: string
+        type: array
+      rating:
+        example: 8.7
+        type: number
+      release_year:
+        example: 1999
+        type: integer
+      review:
+        example: Un chef d'oeuvre de SF
+        type: string
+      title:
+        example: The Matrix
+        type: string
+    type: object
+  main.Movie:
+    properties:
+      genres:
+        example:
+        - Action
+        - Sci-Fi
+        items:
+          type: string
+        type: array
+      id:
+        example: 1
+        type: integer
+      rating:
+        example: 8.7
+        type: number
+      release_year:
+        example: 1999
+        type: integer
+      review:
+        example: Un chef d'oeuvre de SF
+        type: string
+      title:
+        example: The Matrix
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@movieapi.com
+    name: Support API
+  description: API de gestion de films en Go.
+  termsOfService: http://swagger.io/terms/
+  title: Movie API
+  version: "1.0"
+paths:
+  /movies:
+    get:
+      consumes:
+      - application/json
+      description: Renvoie la liste complète des films
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.Movie'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Lister les films
+      tags:
+      - movies
+    post:
+      consumes:
+      - application/json
+      description: Ajoute un nouveau film à la base de données
+      parameters:
+      - description: Infos du film
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/main.CreateMovieRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Film créé
+          schema:
+            type: string
+        "400":
+          description: Erreur
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Créer un film
+      tags:
+      - movies
+  /movies/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Efface définitivement un film de la base de données
+      parameters:
+      - description: ID du Film
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Film supprimé avec succès
+          schema:
+            type: string
+        "404":
+          description: Film non trouvé
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Supprimer un film
+      tags:
+      - movies
+    get:
+      consumes:
+      - application/json
+      description: Renvoie les détails d'un film spécifique
+      parameters:
+      - description: ID du film
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Movie'
+        "404":
+          description: Film non trouvé
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Récupérer un film par ID
+      tags:
+      - movies
+    put:
+      consumes:
+      - application/json
+      description: Met à jour les informations d'un film existant
+      parameters:
+      - description: ID du Film
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Nouvelles infos du film
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/main.CreateMovieRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Movie'
+        "400":
+          description: Erreur de validation
+          schema:
+            type: string
+        "404":
+          description: Film non trouvé
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Modifier un film
+      tags:
+      - movies
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

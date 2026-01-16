@@ -9,6 +9,19 @@ import (
 	"github.com/vfaust1/movie-api/internal/store"
 )
 
+// @title           Movie API
+// @version         1.0
+// @description     API de gestion de films en Go.
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name    Support API
+// @contact.email   support@movieapi.com
+
+// @host            localhost:8080
+// @BasePath        /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	
 	if err := godotenv.Load(); err != nil {
