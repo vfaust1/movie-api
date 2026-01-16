@@ -3,7 +3,7 @@
 Une API REST robuste pour gérer une collection de films, construite avec **Go**, **PostgreSQL** et **Docker**.
 Ce projet démontre une architecture backend moderne, sécurisée et prête pour la production.
 
-![Go Version](https://img.shields.io/badge/Go-1.23+-00ADD8?style=flat&logo=go) ![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?style=flat&logo=docker) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=flat&logo=postgresql)
+![Go Version](https://img.shields.io/badge/Go-1.23+-00ADD8?style=flat&logo=go) ![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?style=flat&logo=docker) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=flat&logo=postgresql) ![Go Audit](https://github.com/vfaust1/movie-api/actions/workflows/audit.yml/badge.svg)
 
 ## 🚀 Fonctionnalités
 
@@ -27,23 +27,32 @@ Ce projet démontre une architecture backend moderne, sécurisée et prête pour
 Voici comment le code est organisé, suivant les standards "Project Layout" de Go :
 
 ```text
-.
-├── cmd/api/                 # Le point d'entrée de l'application
-│   ├── main.go              # Initialise la BDD, charge la config et lance le serveur
-│   ├── routes.go            # Définit les URLs et applique les middlewares
-│   ├── handlers.go          # Contrôleurs : reçoit la requête HTTP -> appelle la BDD -> répond en JSON
-│   └── middleware.go        # Intercepteurs : gère l'Authentification (API Key) et les Logs
-│
-├── internal/store/          # La logique métier et l'accès aux données (interne au projet)
-│   ├── db.go                # Configuration BDD : Connexion Postgres, Retry Logic (Docker) et création des tables
-│   ├── movies.go            # Modèle : Structures Go et requêtes SQL (CRUD, filtres, pagination)
-│   └── movies_test.go       # Tests unitaires pour valider le code
-│
-├── Dockerfile               # Recette de construction de l'image (Multi-stage build Alpine)
-├── compose.yaml             # Orchestrateur : lance l'API et PostgreSQL ensemble
-├── .env.example             # Exemple de configuration (copier en .env pour usage hors Docker)
-├── go.mod & go.sum          # Gestion des dépendances du module Go
-└── .gitignore               # Fichiers à exclure de Git (ex: .env, binaires)
+movie-api/
+├── .github/
+│   └── workflows/
+│       └── audit.yml       # Pipeline CI (GitHub Actions)
+├── cmd/
+│   └── api/
+│       ├── handlers.go     # Contrôleurs HTTP
+│       ├── main.go         # Point d'entrée
+│       ├── middleware.go   # Sécurité et logs
+│       └── routes.go       # Définition des URLs
+├── docs/                   # Documentation générée par Swagger
+│   ├── docs.go
+│   ├── swagger.json
+│   └── swagger.yaml
+├── internal/
+│   └── store/
+│       ├── db.go           # Connexion à la base de données PostgreSQL
+│       ├── movies.go       # Logique métier des films
+│       └── movies_test.go  # Fichier test unitaire pour movies.go
+├── .dockerignore           # Fichiers ignorés par Docker
+├── .env.example            # Variables d'environnement (Template)
+├── .gitignore              # Fichiers ignorés par Git
+├── docker-compose.yml      # Configuration des conteneurs
+├── Dockerfile              # Recette de construction de l'image API
+├── go.mod                  # Gestionnaire de dépendances
+└── README.md               # Ce fichier
 ```
 
 ## 📦 Installation & Démarrage (Docker)
@@ -81,4 +90,4 @@ Toutes les requêtes doivent inclure le header suivant :
 | `DELETE` | `/movies/{id}` | Supprimer un film |
 
 ---
-*Projet personnel réalisé dans le but d'apprendre les bases du langage Go et le fonctionnement d'une API REST, tout en maîtrisant l'intégration avec Docker et PostgreSQL.*
+*Projet personnel réalisé dans le but d'apprendre les bases du langage Go et le fonctionnement d'une API REST. Le projet intègre une base de données PostgreSQL via Docker, une documentation automatique avec Swagger, et un pipeline d'intégration continue (CI) via GitHub Actions.*
