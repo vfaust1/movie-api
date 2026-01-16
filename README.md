@@ -81,4 +81,4 @@ Toutes les requêtes doivent inclure le header suivant :
 | `DELETE` | `/movies/{id}` | Supprimer un film |
 
 ---
-*Projet réalisé dans le cadre d'un parcours de formation Backend Go.*
+*Projet personnel réalisé dans le but d'apprendre les bases du langage Go et le fonctionnement d'une API REST, tout en maîtrisant l'intégration avec Docker et PostgreSQL.*
