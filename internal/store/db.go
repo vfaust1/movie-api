@@ -29,7 +29,7 @@ func OpenDB() (*sql.DB, error) {
 			if err := createTables(db); err != nil {
 				return nil, fmt.Errorf("failed to create tables: %w", err)
 			}
-			return db, nil 
+			return db, nil
 		}
 		log.Printf("Database not ready yet (Attempt %d/%d). Waiting 2s...\n", i+1, maxRetries)
 		time.Sleep(2 * time.Second)

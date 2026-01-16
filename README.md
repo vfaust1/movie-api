@@ -17,14 +17,14 @@ Ce projet démontre une architecture backend moderne, sécurisée et prête pour
 ## 🛠️ Stack Technique
 
 * **Langage** : Go (Golang) 1.23
-* **Base de données** : PostgreSQL
-* **Driver SQL** : `pgx` (Performance & Sécurité)
+* **Base de données** : PostgreSQL (Driver `pgx` pour la performance)
 * **Infrastructure** : Docker & Docker Compose
-* **Router** : Standard library `net/http` (ServeMux 1.22+)
+* **Qualité & CI** : GitHub Actions, Tests Unitaires (Mocks), Linter (`go vet`)
+* **Architecture** : Dependency Injection & Repository Pattern
 
 ## 📂 Architecture du Projet
 
-Voici comment le code est organisé, suivant les standards "Project Layout" de Go :
+Le code suit les standards "Project Layout" de Go et une **Clean Architecture** :
 
 ```text
 movie-api/
@@ -34,7 +34,8 @@ movie-api/
 ├── cmd/
 │   └── api/
 │       ├── handlers.go     # Contrôleurs HTTP
-│       ├── main.go         # Point d'entrée
+│       ├── handlers_test.go # Tests unitaires (Mocking)
+│       ├── main.go         # Point d'entrée & Injection de dépendances
 │       ├── middleware.go   # Sécurité et logs
 │       └── routes.go       # Définition des URLs
 ├── docs/                   # Documentation générée par Swagger
@@ -45,7 +46,8 @@ movie-api/
 │   └── store/
 │       ├── db.go           # Connexion à la base de données PostgreSQL
 │       ├── movies.go       # Logique métier des films
-│       └── movies_test.go  # Fichier test unitaire pour movies.go
+│       ├── movies_test.go  # Tests d'intégration DB
+│       └── storage.go      # Interfaces (Contrats) pour le découplage
 ├── .dockerignore           # Fichiers ignorés par Docker
 ├── .env.example            # Variables d'environnement (Template)
 ├── .gitignore              # Fichiers ignorés par Git
@@ -55,9 +57,16 @@ movie-api/
 └── README.md               # Ce fichier
 ```
 
+### Zoom sur l'Architecture (Injection de Dépendances)
+L'application n'utilise pas de variables globales pour la base de données. À la place, elle utilise une interface MovieRepository.
+
+En Production : On injecte la vraie structure qui parle à PostgreSQL.
+
+En Test : On injecte un Mock (fausse BDD) pour tester l'API instantanément sans Docker.
+
 ## 📦 Installation & Démarrage (Docker)
 
-La méthode recommandée. Aucun outil (Go/Postgres) n'est nécessaire sur votre machine, juste Docker.
+Aucun outil (Go/Postgres) n'est nécessaire sur votre machine, juste Docker.
 
 1.  **Cloner le dépôt**
     ```bash
@@ -69,19 +78,30 @@ La méthode recommandée. Aucun outil (Go/Postgres) n'est nécessaire sur votre 
     ```bash
     docker compose up --build
     ```
-    *L'API sera accessible sur `http://localhost:8080`.*
+    *👉 Une fois lancé, accédez à la documentation interactive : `http://localhost:8080/swagger/index.html`*
+
+## Tests Unitaires
+
+Grâce à l'architecture découplée, les tests s'exécutent en mémoire.
+
+```bash
+# Lancer les tests (nécessite Go installé localement)
+go test -v ./cmd/api/
+``` 
 
 ## 🔌 Utilisation de l'API
 
 ### Authentification
-Toutes les requêtes doivent inclure le header suivant :
-`Authorization: Bearer super-secret-password-123`
+
+L'API utilise une authentification par **Bearer Token**.
+* **Lecture (GET)** : Accès public (pas de token requis).
+* **Écriture (POST, PUT, DELETE)** : Requiert le header suivant :
+    `Authorization: Bearer super-secret-password-123`
 
 ### Exemples de Routes
 
 | Méthode | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/health` | Vérifier l'état du service |
 | `GET` | `/movies` | Lister les films (paginé) |
 | `GET` | `/movies?title=dune` | Rechercher un film |
 | `POST` | `/movies` | Ajouter un film |
@@ -89,5 +109,11 @@ Toutes les requêtes doivent inclure le header suivant :
 | `PUT` | `/movies/{id}` | Modifier un film |
 | `DELETE` | `/movies/{id}` | Supprimer un film |
 
+## 👤 Auteur
+
+**Valentin Faust** 
+[Mon Portfolio](https://valentinfaustweb.vercel.app/)
+
 ---
+
 *Projet personnel réalisé dans le but d'apprendre les bases du langage Go et le fonctionnement d'une API REST. Le projet intègre une base de données PostgreSQL via Docker, une documentation automatique avec Swagger, et un pipeline d'intégration continue (CI) via GitHub Actions.*

@@ -25,6 +25,11 @@ func (app *application) authMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
+		if r.Method == http.MethodGet && strings.Contains(r.URL.Path, "/movies") {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		authHeader := r.Header.Get("Authorization")
 
 		if authHeader == "" {

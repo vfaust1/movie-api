@@ -18,14 +18,14 @@ func (m MockMovieStore) GetMovies(title string, filters store.Filters) ([]store.
 		{ID: 2, Title: "Fake Movie 2", ReleaseYear: 2021},
 	}
 	metadata := store.Metadata{TotalRecords: 2, PageSize: 20, CurrentPage: 1}
-	
+
 	return mockMovies, metadata, nil
 }
 
-func (m MockMovieStore) AddMovie(movie store.Movie) (store.Movie, error) 	{ return store.Movie{}, nil }
-func (m MockMovieStore) GetMoviebyID(id int) (store.Movie, error)           { return store.Movie{}, nil }
-func (m MockMovieStore) UpdateMovie(movie store.Movie) error                { return nil }
-func (m MockMovieStore) DeleteMovie(id int) error                           { return nil }
+func (m MockMovieStore) AddMovie(movie store.Movie) (store.Movie, error) { return store.Movie{}, nil }
+func (m MockMovieStore) GetMoviebyID(id int) (store.Movie, error)        { return store.Movie{}, nil }
+func (m MockMovieStore) UpdateMovie(movie store.Movie) error             { return nil }
+func (m MockMovieStore) DeleteMovie(id int) error                        { return nil }
 
 // --- LE TEST ---
 func TestGetAllMoviesHandler(t *testing.T) {
@@ -33,12 +33,12 @@ func TestGetAllMoviesHandler(t *testing.T) {
 
 	app := &application{
 		store: store.Storage{
-			Movies: mockStore, 
+			Movies: mockStore,
 		},
 	}
 
 	req := httptest.NewRequest(http.MethodGet, "/movies", nil)
-	
+
 	rr := httptest.NewRecorder()
 
 	app.getAllMoviesHandler(rr, req)

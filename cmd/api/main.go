@@ -38,7 +38,7 @@ func main() {
 	}
 
 	defer db.Close()
-	
+
 	app := &application{
 		store: store.NewStorage(db),
 	}
