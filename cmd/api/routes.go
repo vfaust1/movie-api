@@ -7,16 +7,16 @@ import (
 	_ "github.com/vfaust1/movie-api/docs"
 )
 
-func routes() http.Handler {
+func (app *application) routes() http.Handler {
 	router := http.NewServeMux()
 
-	router.HandleFunc("GET /movies", getAllMoviesHandler)
-	router.HandleFunc("GET /movies/{id}", getMovieByIDHandler)
-	router.HandleFunc("POST /movies", createMovieHandler)
-	router.HandleFunc("PUT /movies/{id}", updateMovieHandler)
-	router.HandleFunc("DELETE /movies/{id}", deleteMovieHandler)
+	router.HandleFunc("GET /movies", app.getAllMoviesHandler)
+	router.HandleFunc("GET /movies/{id}", app.getMovieByIDHandler)
+	router.HandleFunc("POST /movies", app.createMovieHandler)
+	router.HandleFunc("PUT /movies/{id}", app.updateMovieHandler)
+	router.HandleFunc("DELETE /movies/{id}", app.deleteMovieHandler)
 
 	router.Handle("/swagger/", httpSwagger.WrapHandler)
 
-	return loggingMiddleware(authMiddleware(router))
+	return app.loggingMiddleware(app.authMiddleware(router))
 }

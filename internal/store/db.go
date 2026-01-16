@@ -10,21 +10,15 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-var db *sql.DB
-
-func InitDB() error {
-
+func OpenDB() (*sql.DB, error) {
 	dsn := os.Getenv("DATABASE_URL")
-
 	if dsn == "" {
-		return fmt.Errorf("DATABASE_URL environment variable is not set")
+		return nil, fmt.Errorf("DATABASE_URL environment variable is not set")
 	}
 
-	var err error
-
-	db, err = sql.Open("pgx", dsn)
+	db, err := sql.Open("pgx", dsn)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	maxRetries := 10
@@ -32,16 +26,19 @@ func InitDB() error {
 		err = db.Ping()
 		if err == nil {
 			log.Println("PostgreSQL database connected")
-			return createTables()
+			if err := createTables(db); err != nil {
+				return nil, fmt.Errorf("failed to create tables: %w", err)
+			}
+			return db, nil 
 		}
 		log.Printf("Database not ready yet (Attempt %d/%d). Waiting 2s...\n", i+1, maxRetries)
 		time.Sleep(2 * time.Second)
 	}
 
-	return fmt.Errorf("could not connect to database after %d attempts: %v", maxRetries, err)
+	return nil, fmt.Errorf("could not connect to database: %v", err)
 }
 
-func createTables() error {
+func createTables(db *sql.DB) error {
 	queryMovies := `
 	CREATE TABLE IF NOT EXISTS movies (
 		id SERIAL PRIMARY KEY,

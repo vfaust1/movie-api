@@ -39,7 +39,7 @@ type Movie struct {
 // @Success      200  {array}   Movie
 // @Router       /movies [get]
 // @Security     BearerAuth
-func getAllMoviesHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) getAllMoviesHandler(w http.ResponseWriter, r *http.Request) {
 	queryValues := r.URL.Query()
 	title := queryValues.Get("title")
 	page := 1
@@ -71,7 +71,7 @@ func getAllMoviesHandler(w http.ResponseWriter, r *http.Request) {
 		SortSafelist: []string{"id", "title", "release_year", "rating"},
 	}
 
-	movies, metadata, err := store.GetMovies(title, filters)
+	movies, metadata, err := app.store.Movies.GetMovies(title, filters)
 
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -98,7 +98,7 @@ func getAllMoviesHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure      404  {string}  string "Film non trouvé"
 // @Router       /movies/{id} [get]
 // @Security     BearerAuth
-func getMovieByIDHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) getMovieByIDHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 
 	id, err := strconv.Atoi(idStr)
@@ -107,7 +107,7 @@ func getMovieByIDHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	movie, err := store.GetMoviebyID(id)
+	movie, err := app.store.Movies.GetMoviebyID(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, "Movie not found", http.StatusNotFound)
@@ -132,7 +132,7 @@ func getMovieByIDHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure      400  {string}  string "Erreur"
 // @Router       /movies [post]
 // @Security     BearerAuth
-func createMovieHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
 	var movie store.Movie
 
 	err := json.NewDecoder(r.Body).Decode(&movie)
@@ -146,7 +146,7 @@ func createMovieHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newMovie, err := store.AddMovie(movie)
+	newMovie, err := app.store.Movies.AddMovie(movie)
 
 	if err != nil {
 		log.Println("Error adding movie:", err)
@@ -170,7 +170,7 @@ func createMovieHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure      404  {string}  string "Film non trouvé"
 // @Router       /movies/{id} [delete]
 // @Security     BearerAuth
-func deleteMovieHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) deleteMovieHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 
 	id, err := strconv.Atoi(idStr)
@@ -179,7 +179,7 @@ func deleteMovieHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = store.DeleteMovie(id)
+	err = app.store.Movies.DeleteMovie(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, "Movie not found", http.StatusNotFound)
@@ -206,7 +206,7 @@ func deleteMovieHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure      404    {string} string "Film non trouvé"
 // @Router       /movies/{id} [put]
 // @Security     BearerAuth
-func updateMovieHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 
 	id, err := strconv.Atoi(idStr)
@@ -229,7 +229,7 @@ func updateMovieHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = store.UpdateMovie(movie)
+	err = app.store.Movies.UpdateMovie(movie)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, "Movie not found", http.StatusNotFound)

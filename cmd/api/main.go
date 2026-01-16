@@ -9,6 +9,10 @@ import (
 	"github.com/vfaust1/movie-api/internal/store"
 )
 
+type application struct {
+	store store.Storage
+}
+
 // @title           Movie API
 // @version         1.0
 // @description     API de gestion de films en Go.
@@ -28,13 +32,20 @@ func main() {
 		log.Println("Info: No .env file found")
 	}
 
-	if err := store.InitDB(); err != nil {
-		log.Fatal("Failed to initialize DB: ", err)
+	db, err := store.OpenDB()
+	if err != nil {
+		log.Fatal("Failed to initialized DB: ", err)
+	}
+
+	defer db.Close()
+	
+	app := &application{
+		store: store.NewStorage(db),
 	}
 
 	srv := &http.Server{
 		Addr:         ":8080",
-		Handler:      routes(),
+		Handler:      app.routes(),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  1 * time.Minute,

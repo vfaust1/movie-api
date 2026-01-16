@@ -10,6 +10,10 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
+type MovieModel struct {
+	DB *sql.DB
+}
+
 type Movie struct {
 	ID          int      `json:"id"`
 	Title       string   `json:"title"`
@@ -38,7 +42,7 @@ type Metadata struct {
 
 // Renvoie la liste des films (recherchés si searchTitle
 // n'est pas vide ainsi que l'erreur s'il y'en a une.
-func GetMovies(searchTitle string, filters Filters) ([]Movie, Metadata, error) {
+func (m MovieModel) GetMovies(searchTitle string, filters Filters) ([]Movie, Metadata, error) {
 	orderBy := "id"
 	direction := "ASC"
 
@@ -66,7 +70,7 @@ func GetMovies(searchTitle string, filters Filters) ([]Movie, Metadata, error) {
 		ORDER BY %s %s, id ASC
 		LIMIT $2 OFFSET $3`, orderBy, direction)
 
-	rows, err := db.Query(query, searchTitle, limit, offset)
+	rows, err := m.DB.Query(query, searchTitle, limit, offset)
 	if err != nil {
 		return nil, Metadata{}, err
 	}
@@ -98,8 +102,8 @@ func GetMovies(searchTitle string, filters Filters) ([]Movie, Metadata, error) {
 // Ajoute un film et lui attribut un ID,
 // renvoie ce même film et nil si l'ajour est bien fait,
 // une struct Movie vide et une erreur sinon.
-func AddMovie(m Movie) (Movie, error) {
-	tx, err := db.Begin()
+func (m MovieModel) AddMovie(movie Movie) (Movie, error) {
+	tx, err := m.DB.Begin()
 	if err != nil {
 		return Movie{}, err
 	}
@@ -112,17 +116,17 @@ func AddMovie(m Movie) (Movie, error) {
 
 	err = tx.QueryRow(
 		queryMovie,
-		m.Title,
-		m.ReleaseYear,
-		m.Rating,
-		m.Review,
-	).Scan(&m.ID)
+		movie.Title,
+		movie.ReleaseYear,
+		movie.Rating,
+		movie.Review,
+	).Scan(&movie.ID)
 
 	if err != nil {
 		return Movie{}, err
 	}
 
-	for _, genreName := range m.Genres {
+	for _, genreName := range movie.Genres {
 		var genreID int
 		queryGetGenre := "SELECT id FROM genres WHERE name = $1"
 
@@ -133,7 +137,7 @@ func AddMovie(m Movie) (Movie, error) {
 
 		queryLink := "INSERT INTO movie_genres (movie_id, genre_id) VALUES ($1, $2)"
 
-		_, err = tx.Exec(queryLink, m.ID, genreID)
+		_, err = tx.Exec(queryLink, movie.ID, genreID)
 		if err != nil {
 			return Movie{}, err
 		}
@@ -143,23 +147,23 @@ func AddMovie(m Movie) (Movie, error) {
 		return Movie{}, err
 	}
 
-	return m, nil
+	return movie, nil
 }
 
 // Recherche un film par un ID,
 // renvoie le film et nil s'il existe,
 // une struct Movie vide et une erreur sinon.
-func GetMoviebyID(id int) (Movie, error) {
-	return getMovieWithGenresSimple(id)
+func (m MovieModel) GetMoviebyID(id int) (Movie, error) {
+	return m.getMovieWithGenresSimple(id)
 }
 
-func getMovieWithGenresSimple(id int) (Movie, error) {
+func (m MovieModel) getMovieWithGenresSimple(id int) (Movie, error) {
 	queryMovie := `
         SELECT id, title, release_year, ROUND(rating::numeric, 1), review
         FROM movies WHERE id = $1`
 
-	var m Movie
-	err := db.QueryRow(queryMovie, id).Scan(&m.ID, &m.Title, &m.ReleaseYear, &m.Rating, &m.Review)
+	var movie Movie
+	err := m.DB.QueryRow(queryMovie, id).Scan(&movie.ID, &movie.Title, &movie.ReleaseYear, &movie.Rating, &movie.Review)
 	if err != nil {
 		return Movie{}, err
 	}
@@ -169,7 +173,7 @@ func getMovieWithGenresSimple(id int) (Movie, error) {
         JOIN movie_genres mg ON g.id = mg.genre_id
         WHERE mg.movie_id = $1`
 
-	rows, err := db.Query(queryGenres, id)
+	rows, err := m.DB.Query(queryGenres, id)
 	if err != nil {
 		return Movie{}, err
 	}
@@ -183,18 +187,18 @@ func getMovieWithGenresSimple(id int) (Movie, error) {
 		}
 		genres = append(genres, g)
 	}
-	m.Genres = genres
+	movie.Genres = genres
 
-	return m, nil
+	return movie, nil
 }
 
 // Supprime un film par son ID,
 // renvoie une erreur si elle n'a pas
 // pu supprimer ce film, nil sinon.
-func DeleteMovie(id int) error {
+func (m MovieModel) DeleteMovie(id int) error {
 	query := "DELETE FROM movies WHERE id = $1"
 
-	res, err := db.Exec(query, id)
+	res, err := m.DB.Exec(query, id)
 	if err != nil {
 		return err
 	}
@@ -213,14 +217,14 @@ func DeleteMovie(id int) error {
 
 // Met à jour tous les champs d'un Movie,
 // renvoie une erreur s'il l'update ne s'est pas fait.
-func UpdateMovie(m Movie) error {
+func (m MovieModel) UpdateMovie(movie Movie) error {
 	query := `
 		UPDATE movies
 		SET title = $1, release_year = $2, rating = $3, review = $4
 		WHERE id = $5`
 
 	// On execute le query avec les arguments
-	res, err := db.Exec(query, m.Title, m.ReleaseYear, m.Rating, m.Review, m.ID)
+	res, err := m.DB.Exec(query, movie.Title, movie.ReleaseYear, movie.Rating, movie.Review, movie.ID)
 	if err != nil {
 		return err
 	}
