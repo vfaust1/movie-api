@@ -1,0 +1,33 @@
+name: Go Audit
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-and-test:
+    name: Vérification du code
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Récupération du code
+      uses: actions/checkout@v4
+
+    - name: Installation de Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.22'
+
+    - name: Téléchargement des dépendances
+      run: go mod download
+
+    - name: Vérification du formatage
+      run: if [ -n "$(gofmt -l .)" ]; then echo "Le code n'est pas formaté !" && exit 1; fi
+
+    - name: Lancement des Tests
+      run: go test -v ./...
+
+    - name: Essai de Compilation
+      run: go build -v ./cmd/api
