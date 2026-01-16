@@ -44,8 +44,8 @@ func getAllMoviesHandler(w http.ResponseWriter, r *http.Request) {
 	title := queryValues.Get("title")
 	page := 1
 
-	if p := queryValues.Get("page"); p!= "" {
-		if n, err := strconv.Atoi(p); err == nil && n > 0{
+	if p := queryValues.Get("page"); p != "" {
+		if n, err := strconv.Atoi(p); err == nil && n > 0 {
 			page = n
 		}
 	}
@@ -56,7 +56,7 @@ func getAllMoviesHandler(w http.ResponseWriter, r *http.Request) {
 		if n, err := strconv.Atoi(ps); err == nil && n > 0 {
 			pageSize = n
 		}
-			
+
 	}
 
 	sort := "id"
@@ -65,9 +65,9 @@ func getAllMoviesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filters := store.Filters{
-		Page: page,
-		PageSize: pageSize,
-		Sort: sort,
+		Page:         page,
+		PageSize:     pageSize,
+		Sort:         sort,
 		SortSafelist: []string{"id", "title", "release_year", "rating"},
 	}
 
@@ -81,7 +81,7 @@ func getAllMoviesHandler(w http.ResponseWriter, r *http.Request) {
 
 	response := map[string]any{
 		"metadata": metadata,
-		"movies": movies,
+		"movies":   movies,
 	}
 
 	respondWithJSON(w, http.StatusOK, response)
@@ -127,7 +127,7 @@ func getMovieByIDHandler(w http.ResponseWriter, r *http.Request) {
 // @Tags         movies
 // @Accept       json
 // @Produce      json
-// @Param        input body CreateMovieRequest true "Infos du film" 
+// @Param        input body CreateMovieRequest true "Infos du film"
 // @Success      201  {string}  string "Film créé"
 // @Failure      400  {string}  string "Erreur"
 // @Router       /movies [post]
@@ -223,7 +223,7 @@ func updateMovieHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	movie.ID = id
-	
+
 	if err := movie.Validate(); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

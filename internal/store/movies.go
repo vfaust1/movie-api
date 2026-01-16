@@ -11,12 +11,12 @@ import (
 )
 
 type Movie struct {
-	ID          int     `json:"id"`
-	Title       string  `json:"title"`
-	ReleaseYear int     `json:"release_year"`
+	ID          int      `json:"id"`
+	Title       string   `json:"title"`
+	ReleaseYear int      `json:"release_year"`
 	Rating      *float64 `json:"rating"`
-	Review		*string	`json:"review"`
-	Genres		[]string `json:"genres"`
+	Review      *string  `json:"review"`
+	Genres      []string `json:"genres"`
 }
 
 type Filters struct {
@@ -34,10 +34,9 @@ type Metadata struct {
 	TotalRecords int `json:"total_records"`
 }
 
-
 // --- FONCTIONS PUBLIQUES (API du package) ---
 
-// Renvoie la liste des films (recherchés si searchTitle 
+// Renvoie la liste des films (recherchés si searchTitle
 // n'est pas vide ainsi que l'erreur s'il y'en a une.
 func GetMovies(searchTitle string, filters Filters) ([]Movie, Metadata, error) {
 	orderBy := "id"
@@ -56,20 +55,20 @@ func GetMovies(searchTitle string, filters Filters) ([]Movie, Metadata, error) {
 			}
 		}
 	}
-		
+
 	limit := filters.PageSize
 	offset := (filters.Page - 1) * filters.PageSize
-	
+
 	query := fmt.Sprintf(`
 		SELECT count(*) OVER(), id, title, release_year, ROUND(rating::numeric, 1), review 
 		FROM movies 
 		WHERE title ILIKE '%%' || $1 || '%%' 
 		ORDER BY %s %s, id ASC
 		LIMIT $2 OFFSET $3`, orderBy, direction)
-	
+
 	rows, err := db.Query(query, searchTitle, limit, offset)
 	if err != nil {
-		return nil, Metadata{},err
+		return nil, Metadata{}, err
 	}
 
 	defer rows.Close()
@@ -79,10 +78,10 @@ func GetMovies(searchTitle string, filters Filters) ([]Movie, Metadata, error) {
 
 	for rows.Next() {
 		var m Movie
-		
+
 		err := rows.Scan(&totalRecords, &m.ID, &m.Title, &m.ReleaseYear, &m.Rating, &m.Review)
 		if err != nil {
-			return nil, Metadata{},err
+			return nil, Metadata{}, err
 		}
 		moviesList = append(moviesList, m)
 	}
@@ -100,17 +99,17 @@ func GetMovies(searchTitle string, filters Filters) ([]Movie, Metadata, error) {
 // renvoie ce même film et nil si l'ajour est bien fait,
 // une struct Movie vide et une erreur sinon.
 func AddMovie(m Movie) (Movie, error) {
-	tx, err :=db.Begin()
+	tx, err := db.Begin()
 	if err != nil {
 		return Movie{}, err
 	}
 	defer tx.Rollback()
-	
+
 	queryMovie := `
 		INSERT INTO movies (title, release_year, rating, review)
 		VALUES ($1, $2, $3, $4)
 		RETURNING id`
-	
+
 	err = tx.QueryRow(
 		queryMovie,
 		m.Title,
@@ -118,22 +117,22 @@ func AddMovie(m Movie) (Movie, error) {
 		m.Rating,
 		m.Review,
 	).Scan(&m.ID)
-	
+
 	if err != nil {
 		return Movie{}, err
 	}
-	
+
 	for _, genreName := range m.Genres {
 		var genreID int
 		queryGetGenre := "SELECT id FROM genres WHERE name = $1"
-		
+
 		err = tx.QueryRow(queryGetGenre, genreName).Scan(&genreID)
 		if err != nil {
 			return Movie{}, fmt.Errorf("genre '%s' not found", genreName)
 		}
 
 		queryLink := "INSERT INTO movie_genres (movie_id, genre_id) VALUES ($1, $2)"
-		
+
 		_, err = tx.Exec(queryLink, m.ID, genreID)
 		if err != nil {
 			return Movie{}, err
@@ -143,7 +142,7 @@ func AddMovie(m Movie) (Movie, error) {
 	if err := tx.Commit(); err != nil {
 		return Movie{}, err
 	}
-	
+
 	return m, nil
 }
 
@@ -155,43 +154,43 @@ func GetMoviebyID(id int) (Movie, error) {
 }
 
 func getMovieWithGenresSimple(id int) (Movie, error) {
-    queryMovie := `
+	queryMovie := `
         SELECT id, title, release_year, ROUND(rating::numeric, 1), review
         FROM movies WHERE id = $1`
-    
-    var m Movie
-    err := db.QueryRow(queryMovie, id).Scan(&m.ID, &m.Title, &m.ReleaseYear, &m.Rating, &m.Review)
-    if err != nil {
-        return Movie{}, err
-    }
 
-    queryGenres := `
+	var m Movie
+	err := db.QueryRow(queryMovie, id).Scan(&m.ID, &m.Title, &m.ReleaseYear, &m.Rating, &m.Review)
+	if err != nil {
+		return Movie{}, err
+	}
+
+	queryGenres := `
         SELECT g.name FROM genres g
         JOIN movie_genres mg ON g.id = mg.genre_id
         WHERE mg.movie_id = $1`
-        
-    rows, err := db.Query(queryGenres, id)
-    if err != nil {
-        return Movie{}, err
-    }
-    defer rows.Close()
 
-    var genres []string
-    for rows.Next() {
-        var g string
-        if err := rows.Scan(&g); err != nil {
-            continue
-        }
-        genres = append(genres, g)
-    }
-    m.Genres = genres
+	rows, err := db.Query(queryGenres, id)
+	if err != nil {
+		return Movie{}, err
+	}
+	defer rows.Close()
 
-    return m, nil
+	var genres []string
+	for rows.Next() {
+		var g string
+		if err := rows.Scan(&g); err != nil {
+			continue
+		}
+		genres = append(genres, g)
+	}
+	m.Genres = genres
+
+	return m, nil
 }
 
 // Supprime un film par son ID,
 // renvoie une erreur si elle n'a pas
-// pu supprimer ce film, nil sinon. 
+// pu supprimer ce film, nil sinon.
 func DeleteMovie(id int) error {
 	query := "DELETE FROM movies WHERE id = $1"
 
@@ -219,7 +218,7 @@ func UpdateMovie(m Movie) error {
 		UPDATE movies
 		SET title = $1, release_year = $2, rating = $3, review = $4
 		WHERE id = $5`
-	
+
 	// On execute le query avec les arguments
 	res, err := db.Exec(query, m.Title, m.ReleaseYear, m.Rating, m.Review, m.ID)
 	if err != nil {
@@ -234,7 +233,7 @@ func UpdateMovie(m Movie) error {
 	return nil
 }
 
-// Vérifie que les données du film 
+// Vérifie que les données du film
 // respectent certaines règles métiers
 func (m *Movie) Validate() error {
 	m.Title = strings.TrimSpace(m.Title)
@@ -271,8 +270,8 @@ func (m *Movie) Validate() error {
 	return nil
 }
 
-// Permet de calculer les métadonnées 
-// pour l'affichage 
+// Permet de calculer les métadonnées
+// pour l'affichage
 func calculateMetadata(totalRecords, page, pageSize int) Metadata {
 	if totalRecords == 0 {
 		return Metadata{}

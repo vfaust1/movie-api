@@ -23,7 +23,7 @@ import (
 // @in header
 // @name Authorization
 func main() {
-	
+
 	if err := godotenv.Load(); err != nil {
 		log.Println("Info: No .env file found")
 	}

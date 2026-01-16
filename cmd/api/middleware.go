@@ -18,13 +18,13 @@ func loggingMiddleware(next http.Handler) http.Handler {
 }
 
 func authMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		if strings.HasPrefix(r.URL.Path, "/swagger/") {
 			next.ServeHTTP(w, r)
 			return
 		}
-		
+
 		authHeader := r.Header.Get("Authorization")
 
 		if authHeader == "" {
@@ -45,7 +45,7 @@ func authMiddleware(next http.Handler) http.Handler {
 		if token != expectedKey {
 			http.Error(w, "Invalid API key", http.StatusUnauthorized)
 			return
-		
+
 		}
 
 		next.ServeHTTP(w, r)
